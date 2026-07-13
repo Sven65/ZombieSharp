@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -10,7 +10,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.294" />
+    <!-- Was hard-pinned to 1.0.294 (Feb 2025) with the runtime asset bundled,
+         which shipped its own copy of CounterStrikeSharp.API.dll alongside
+         the plugin. That collided with the server's already-loaded (much
+         newer) copy at runtime and caused MissingFieldException on load.
+         Floating to 1.0.* + ExcludeAssets=runtime matches the pattern
+         GamemodeSwitcher.csproj already uses - build against whatever's
+         current, don't bundle a second copy, let the server's own
+         CounterStrikeSharp.API.dll be the only one in play. -->
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.*">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

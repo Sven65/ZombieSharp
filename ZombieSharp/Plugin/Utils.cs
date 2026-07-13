@@ -270,8 +270,21 @@ public class Utils
             return;
         }
 
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Invoke(client.Pawn.Value, damageInfo);
+        // CBaseEntity_TakeDamageOldFunc gained a 3rd (CTakeDamageResult) param
+        // at some point after the 1.0.294 API this was originally written
+        // against - allocate it the same manual way damageInfo is allocated
+        // just above, since there's no managed constructor for it either.
+        var resultSize = Schema.GetClassSize("CTakeDamageResult");
+        var resultPtr = Marshal.AllocHGlobal(resultSize);
+
+        for (var i = 0; i < resultSize; i++)
+            Marshal.WriteByte(resultPtr, i, 0);
+
+        var damageResult = new CTakeDamageResult(resultPtr);
+
+        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Invoke(client.Pawn.Value, damageInfo, damageResult);
         Marshal.FreeHGlobal(ptr);
+        Marshal.FreeHGlobal(resultPtr);
     }
 
     public static void UpdatedPlayerCash(CCSPlayerController? client, int damage)
